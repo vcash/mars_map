@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>FYBR on Mars</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.css' rel='stylesheet' />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Condensed" rel="stylesheet">
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<style>
+    #menu {
+        background: #fff;
+        position: absolute;
+        z-index: 1;
+        top: 50px;
+        right: 10px;
+        border-radius: 2px;
+        width: 100px;
+        border: 1px solid rgba(255,255,255,0.4);
+        font-family: 'Roboto Condensed', sans-serif;
+    }
+
+    #menu a {
+        font-size: 10px;
+        color: #404040;
+        display: block;
+        margin: 0;
+        padding: 0;
+        padding: 10px;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255,255,255,0.25);
+        text-align: center;
+    }
+
+    #menu a:last-child {
+        border: none;
+    }
+
+    #menu a:hover {
+        background-color: #8c8c8c;
+        color: #404040;
+    }
+
+    #menu a.active {
+        background-color: #2d92dd;
+        color: #ffffff;
+    }
+
+    #menu a.active:hover {
+        background: #237dbd;
+    }
+</style>
+
+<style type='text/css'>
+    #info {
+        display: block;
+        position: absolute;
+        bottom: 0%;
+        left: 40%;
+        margin: 0px auto;
+        width: 20%;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 10px;
+        text-align: center;
+        color: #000;
+        background: rgba(255,255,255,0.33);
+        font-family: 'Roboto Condensed', sans-serif;
+    }
+</style>
+
+<div id='map'></div>
+<nav id="menu"></nav>
+<pre id='info'></pre>
+
+<script src='https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js'></script>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiY3Jhd2ZvMTAiLCJhIjoiY2lmZno0MXJmOTVwaXNlbTdneWh6Z2hsMCJ9.VVx9M0lgoRRwW1WPBv0gqg';
+
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/crawfo10/cj8lzubzv6fmr2rqndxkcys6r',
+  center: [-89.846, 75.433],
+  zoom: 14
+});
+
+// Add zoom and rotation controls to the map.
+var nav = new mapboxgl.NavigationControl();
+map.addControl(nav, 'top-left');
+
+// Add fullscreen control
+var nav = new mapboxgl.FullscreenControl();
+map.addControl(nav, 'top-right');
+
+// Mouse coordinates function
+map.on('mousemove', function (e) {
+    document.getElementById('info').innerHTML =
+        // e.point is the x, y coordinates of the mousemove event relative
+        // to the top-left corner of the map
+        JSON.stringify(e.point) + '<br />' +
+        // e.lngLat is the longitude, latitude geographical position of the event
+        JSON.stringify(e.lngLat);
+});
+
+map.on('load', function () {
+    map.addSource('Terrain Model', {
+        type: 'raster',
+        url: 'mapbox://crawfo10.9lk63p5x'
+        });
+    map.addLayer({
+        'id': 'Terrain Model',
+        'type': 'raster',
+        'source': 'Terrain Model',
+        'layout': {
+            'visibility': 'none',
+        }
+        });
+});
+
+var toggleableLayerIds = [ 'Terrain Model' ];
+
+for (var i = 0; i < toggleableLayerIds.length; i++) {
+    var id = toggleableLayerIds[i];
+
+    var link = document.createElement('a');
+    link.href = '#';
+    link.className = 'active';
+    link.textContent = id;
+
+    link.onclick = function (e) {
+        var clickedLayer = this.textContent;
+        e.preventDefault();
+        e.stopPropagation();
+
+        var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+
+        if (visibility === 'none') {
+            map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+            this.className = '';
+        } else {
+            this.className = 'active';
+            map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+        }
+    };
+
+    var layers = document.getElementById('menu');
+    layers.appendChild(link);
+}
+
+
+</script>
+
+</body>
+</html>
